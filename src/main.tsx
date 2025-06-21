@@ -1,15 +1,16 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 // import App from './App.tsx'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { Error } from './pages/Error/Error.tsx'
-import { Menu } from './pages/Menu/Menu.tsx'
+import { Error as ErrorPage } from './pages/Error/Error.tsx'
 import { Cart } from './pages/Cart/Cart.tsx'
 import { Lauoyt } from './Layout/Layout/Layout.tsx'
 import { Product } from './pages/Product/Product.tsx'
 import axios from 'axios'
 import { PREFIX_URL } from './helpers/API.ts'
+
+const Menu = lazy(() => import('./pages/Menu/Menu.tsx'))
 
 const router = createBrowserRouter([
   {
@@ -18,7 +19,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Menu />
+        element: <Suspense fallback={<>Загрузка...</>}><Menu /></Suspense>
       },
       {
         path: '/cart',
@@ -27,12 +28,14 @@ const router = createBrowserRouter([
       {
         path: '/product/:id',
         element: <Product />,
+        errorElement: <>error</>,
         loader: async ({params}) => {
-          await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 2000)
-            })
+          // throw new Error('this is error')
+          // await new Promise<void>((resolve) => {
+          //       setTimeout(() => {
+          //           resolve();
+          //       }, 2000)
+          //   })
           const {data} = await axios.get(`${PREFIX_URL}/products/${params.id}`)
           return data
         },
@@ -41,7 +44,7 @@ const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Error />
+    element: <ErrorPage />
   }
 ])
 

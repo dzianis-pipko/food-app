@@ -1,9 +1,9 @@
 import { ProductCard } from '../../../components/ProductCard/ProductCard'
 import type { MenuListProps } from './MenuList.props'
+import styles from './MenuList.module.css'
 
 export const MenuList = ({products}:MenuListProps ) => {
-    return products.map((p) => {
-        return (
+    return <div className={styles.wrapper}>{products.map((p) => (
             <ProductCard
                 key={p.id}
                 id={p.id}
@@ -14,5 +14,5 @@ export const MenuList = ({products}:MenuListProps ) => {
                 rating={p.rating}
             />
         )
-    })
+    )}</div>
 }
