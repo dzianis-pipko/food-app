@@ -3,18 +3,49 @@ import Button from '../../components/Button/Button'
 import { Headling } from '../../components/Headling/Headling'
 import Input from '../../components/Input/Input'
 import styles from './Login.module.css'
-import type { FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
+import axios, { AxiosError } from 'axios'
+import { PREFIX_URL } from '../../helpers/API'
+
+export type LoginForm = {
+    email: {
+        value: string;
+    },
+    password: {
+        value: string;
+    }
+}
 
 export const Login = () => {
-    const submit = (e: FormEvent) => {
+    const [loginErrorMessage, setLoginErrorMessage] = useState<string | undefined>('')
+    const submit = async (e: FormEvent) => {
         e.preventDefault();
-        console.log(e);
+        const target = e.target as typeof e.target & LoginForm
+        const {email, password} = target;
+        await sendLogin(email.value, password.value);
+
+    }
+
+    const sendLogin = async(email: string, password: string) => {
+        try{
+            const {data} = await axios.post(`${PREFIX_URL}/auth/login`, {
+                email,
+                password
+            })
+            console.log('data', data);
+
+        }catch(e){
+            if(e instanceof AxiosError){
+                setLoginErrorMessage(e.response?.data.message[0])
+            }
+        }
+        
     }
 
     return (
     <div className={styles.login}>
 		<Headling>Вход</Headling>
-		{/* {loginErrorMessage && <div className={styles.error}>{loginErrorMessage}</div>} */}
+		{loginErrorMessage && <div className={styles.error}>{loginErrorMessage}</div>}
 		<form className={styles.form} onSubmit={submit}>
 			<div className={styles.field}>
 				<label htmlFor="email">Ваш email</label>
