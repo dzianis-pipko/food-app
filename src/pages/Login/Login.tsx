@@ -3,13 +3,13 @@ import Button from '../../components/Button/Button'
 import { Headling } from '../../components/Headling/Headling'
 import Input from '../../components/Input/Input'
 import styles from './Login.module.css'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import axios, { AxiosError } from 'axios'
 import { PREFIX_URL } from '../../helpers/API'
 import type { AuthInterface } from '../../interfaces/auth.interface'
-import { useDispatch } from 'react-redux'
-import { UserActions } from '../../store/user.slice'
-import type { AppDispatch } from '../../store/store'
+import { useDispatch, useSelector } from 'react-redux'
+import { login} from '../../store/user.slice'
+import type { AppDispatch, RootState } from '../../store/store'
 
 export type LoginForm = {
     email: {
@@ -24,6 +24,7 @@ export const Login = () => {
     const [loginErrorMessage, setLoginErrorMessage] = useState<string | undefined>('')
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
+    const jwt = useSelector((s: RootState) => s.user.jwt);
 
     const submit = async (e: FormEvent) => {
         e.preventDefault();
@@ -34,41 +35,34 @@ export const Login = () => {
     }
 
     const sendLogin = async(email: string, password: string) => {
-        try{
-            const {data} = await axios.post<AuthInterface>(`${PREFIX_URL}/auth/login`, {
-                email,
-                password
-            })
-            dispatch(UserActions.addJwt(data.access_token));
-            navigate('/')
-
-        }catch(e){
-            if(e instanceof AxiosError){
-                setLoginErrorMessage(e.response?.data.message[0])
-            }
-        }
-        
+        dispatch(login({email, password}))
     }
 
+    useEffect(() => {
+        if(jwt){
+            navigate('/')
+        }
+    }, [jwt, navigate])
+
     return (
-    <div className={styles.login}>
-		<Headling>Вход</Headling>
-		{loginErrorMessage && <div className={styles.error}>{loginErrorMessage}</div>}
-		<form className={styles.form} onSubmit={submit}>
-			<div className={styles.field}>
-				<label htmlFor="email">Ваш email</label>
-				<Input id="email" name='email' placeholder='Email' />
-			</div>
-			<div className={styles.field}>
-				<label htmlFor="password">Ваш пароль</label>
-				<Input id="password" name='password' type="password" placeholder='Пароль' />
-			</div>
-			<Button appearence="big">Вход</Button>
-		</form>
-		<div className={styles.links}>
-			<div>Нет акканута?</div>
-			<Link to="/auth/register">Зарегистрироваться</Link>
-		</div>
-	</div>
+        <div className={styles.login}>
+            <Headling>Вход</Headling>
+            {loginErrorMessage && <div className={styles.error}>{loginErrorMessage}</div>}
+            <form className={styles.form} onSubmit={submit}>
+                <div className={styles.field}>
+                    <label htmlFor="email">Ваш email</label>
+                    <Input id="email" name='email' placeholder='Email' />
+                </div>
+                <div className={styles.field}>
+                    <label htmlFor="password">Ваш пароль</label>
+                    <Input id="password" name='password' type="password" placeholder='Пароль' />
+                </div>
+                <Button appearence="big">Вход</Button>
+            </form>
+            <div className={styles.links}>
+                <div>Нет акканута?</div>
+                <Link to="/auth/register">Зарегистрироваться</Link>
+            </div>
+        </div>
     )
 }
