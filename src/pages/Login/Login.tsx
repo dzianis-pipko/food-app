@@ -3,12 +3,9 @@ import Button from '../../components/Button/Button'
 import { Headling } from '../../components/Headling/Headling'
 import Input from '../../components/Input/Input'
 import styles from './Login.module.css'
-import { useEffect, useState, type FormEvent } from 'react'
-import axios, { AxiosError } from 'axios'
-import { PREFIX_URL } from '../../helpers/API'
-import type { AuthInterface } from '../../interfaces/auth.interface'
+import { useEffect, type FormEvent } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { login} from '../../store/user.slice'
+import { login, UserActions} from '../../store/user.slice'
 import type { AppDispatch, RootState } from '../../store/store'
 
 export type LoginForm = {
@@ -21,13 +18,13 @@ export type LoginForm = {
 }
 
 export const Login = () => {
-    const [loginErrorMessage, setLoginErrorMessage] = useState<string | undefined>('')
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const jwt = useSelector((s: RootState) => s.user.jwt);
+    const {jwt, loginErrorMessage} = useSelector((s: RootState) => s.user);
 
     const submit = async (e: FormEvent) => {
         e.preventDefault();
+        dispatch(UserActions.clearLoginError())
         const target = e.target as typeof e.target & LoginForm
         const {email, password} = target;
         await sendLogin(email.value, password.value);
